@@ -5,8 +5,11 @@
 #include "ugds/hashtbl.h"
 #include "ugds/symbol.h"
 #include "ugds/vector.h"
+#include "ugds/string.h"
 
 #define HASHTBL_INIT_BUCKETS 8
+
+/* ---- UGDS_Vector ---- */
 
 /* Rounds number to nearest power of 2 */
 static inline size_t
@@ -51,7 +54,7 @@ UGDS_init_vector_of_len(size_t item_size, size_t init_len) {
   }
 
   ret->len = 0;
-  return NULL;
+  return ret;
 }
 
 void *
@@ -90,6 +93,8 @@ UGDS_destroy_vector(UGDS_Vector *vec) {
   free(vec);
 }
 
+/* ---- UGDS_Symbol ---- */
+
 UGDS_Symbol
 UGDS_symbol_from_c_string(const char *str) {
   UGDS_Symbol ret = {.text = (const unsigned char *)str, .len = strlen(str)};
@@ -110,6 +115,8 @@ UGDS_symbol_equal(UGDS_Symbol sym1, UGDS_Symbol sym2) {
   return strncmp((const char *)sym1.text, (const char *)sym2.text, sym1.len) ==
          0;
 }
+
+/* ---- UGDS_Hashtbl ---- */
 
 UGDS_Hashtbl *
 UGDS_init_hashtbl(UGDS_Hashtbl_free free_fn) {
@@ -195,4 +202,28 @@ UGDS_find_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym) {
     }
   }
   return NULL;
+}
+
+/* ---- UGDS_String ---- */
+
+UGDS_String *
+UGDS_init_string() {
+  return UGDS_init_vector(sizeof(unsigned char));
+}
+
+UGDS_String *
+UGDS_init_string_from_c_string(const char *c) {
+  size_t len = strlen(c);
+  UGDS_Vector *ret = UGDS_init_vector_of_len(sizeof(unsigned char), len);
+  if (!ret) {
+    return NULL;
+  }
+  ret->len = len;
+  memcpy(ret->_buf, c, len);
+  return ret;
+}
+
+void
+UGDS_destroy_string(UGDS_String *string) {
+  UGDS_destroy_vector(string);
 }
