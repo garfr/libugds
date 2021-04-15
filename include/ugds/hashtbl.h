@@ -27,6 +27,6 @@ void UGDS_destroy_hashtbl(UGDS_Hashtbl *tbl);
  * already there */
 UGDS_HashEntry *UGDS_insert_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym,
                                     void *data);
-UGDS_HashEntry *UGDS_find_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym);
+UGDS_HashEntry *UGDS_find_hashtbl(const UGDS_Hashtbl *tbl, UGDS_Symbol sym);
 
 #endif

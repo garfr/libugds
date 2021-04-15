@@ -15,9 +15,9 @@ typedef struct {
 } UGDS_Symbol;
 
 /* Doesn't take ownership of the string, freeing it is left to the caller */
-UGDS_Symbol UGDS_symbol_from_c_string(const char *str);
+UGDS_Symbol UGDS_init_symbol_from_c_string(const char *str);
 
-bool UGDS_symbol_equal(UGDS_Symbol sym1, UGDS_Symbol sym2);
+bool UGDS_equal_symbol(UGDS_Symbol sym1, UGDS_Symbol sym2);
 /* Prints string to fild */
 void UGDS_print_symbol(FILE *file, UGDS_Symbol);
 

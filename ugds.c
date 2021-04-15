@@ -78,11 +78,26 @@ UGDS_push_vector(UGDS_Vector *vec, void *item) {
 }
 
 void *
-UGDS_index_vector(UGDS_Vector *vec, size_t index) {
+UGDS_index_vector(const UGDS_Vector *vec, size_t index) {
   if (index >= vec->len) {
     return NULL;
   }
   return &vec->_buf[index * vec->_item_size];
+}
+
+bool
+UGDS_reserve_vector(UGDS_Vector *vec, size_t amount) {
+  if (vec->len + amount >= vec->_alloc) {
+    size_t new_items = roundup(vec->len + amount);
+    size_t new_size = new_items * vec->_item_size;
+    uint8_t *buffer = realloc(vec->_buf, new_size);
+    if (!buffer) {
+      return false;
+    }
+    vec->_buf = buffer;
+    vec->_alloc = new_items;
+  }
+  return true;
 }
 
 void
@@ -96,7 +111,7 @@ UGDS_destroy_vector(UGDS_Vector *vec) {
 /* ---- UGDS_Symbol ---- */
 
 UGDS_Symbol
-UGDS_symbol_from_c_string(const char *str) {
+UGDS_init_symbol_from_c_string(const char *str) {
   UGDS_Symbol ret = {.text = (const unsigned char *)str, .len = strlen(str)};
   return ret;
 }
@@ -107,7 +122,7 @@ UGDS_print_symbol(FILE *file, UGDS_Symbol sym) {
 }
 
 bool
-UGDS_symbol_equal(UGDS_Symbol sym1, UGDS_Symbol sym2) {
+UGDS_equal_symbol(UGDS_Symbol sym1, UGDS_Symbol sym2) {
   if (sym1.len != sym2.len) {
     return false;
   }
@@ -171,7 +186,7 @@ UGDS_insert_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym, void *data) {
   follow = forward;
 
   while (forward != NULL) {
-    if (UGDS_symbol_equal(forward->sym, sym)) {
+    if (UGDS_equal_symbol(forward->sym, sym)) {
       forward->data = data;
       return forward;
     }
@@ -192,12 +207,12 @@ UGDS_insert_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym, void *data) {
 }
 
 UGDS_HashEntry *
-UGDS_find_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym) {
+UGDS_find_hashtbl(const UGDS_Hashtbl *tbl, UGDS_Symbol sym) {
   size_t index = hash_symbol(sym) % tbl->_n_buckets;
 
   UGDS_HashEntry *entry;
   for (entry = tbl->_buckets[index]; entry != NULL; entry = entry->next) {
-    if (UGDS_symbol_equal(entry->sym, sym)) {
+    if (UGDS_equal_symbol(entry->sym, sym)) {
       return entry;
     }
   }
@@ -226,4 +241,33 @@ UGDS_init_string_from_c_string(const char *c) {
 void
 UGDS_destroy_string(UGDS_String *string) {
   UGDS_destroy_vector(string);
+}
+
+bool
+UGDS_equal_string(const UGDS_String *str1, const UGDS_String *str2) {
+  if (str1->len != str2->len) {
+    return false;
+  }
+  for (size_t i = 0; i < str1->len; i++) {
+    if (str1->_buf[i] != str2->_buf[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool
+UGDS_concat_string(UGDS_String *str1, const UGDS_String *str2) {
+  if (!UGDS_reserve_vector(str1, str2->len)) {
+    return false;
+  }
+
+  memcpy(&str1->_buf[str1->len], str2->_buf, str2->len);
+  str1->len += str2->len;
+  return true;
+}
+
+void
+UGDS_print_string(FILE *file, const UGDS_String *string) {
+  fprintf(file, "%.*s", (int)string->len, (const unsigned char *)string->_buf);
 }

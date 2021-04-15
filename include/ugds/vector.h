@@ -20,9 +20,10 @@ UGDS_Vector *UGDS_init_vector_of_len(size_t item_size, size_t init_len);
 void *UGDS_push_vector(UGDS_Vector *vec, void *item);
 
 /* Returns NULL on out of bounds */
-void *UGDS_index_vector(UGDS_Vector *vec, size_t index);
+void *UGDS_index_vector(const UGDS_Vector *vec, size_t index);
 
 /* Will not fail */
 void UGDS_destroy_vector(UGDS_Vector *vec);
+bool UGDS_reserve_vector(UGDS_Vector *vec, size_t amount);
 
 #endif
