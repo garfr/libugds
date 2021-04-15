@@ -15,8 +15,13 @@ libugds is a simple C library that provides a handful of common functionalities 
 Building requires ``meson`` and ``ninja``.
 
 ``git clone https://github.com/garfr/libugds``
+
 ``cd libugds``
+
 ``mkdir build/``
+
 ``meson configure build``
+
 ``cd build``
+
 ``ninja``
