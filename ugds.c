@@ -156,7 +156,7 @@ hash_symbol(UGDS_Symbol sym) {
 }
 
 UGDS_HashEntry *
-UGDS_insert_hashtable(UGDS_Hashtbl *tbl, UGDS_Symbol sym, void *data) {
+UGDS_insert_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym, void *data) {
   size_t index = hash_symbol(sym) % tbl->_n_buckets;
 
   UGDS_HashEntry *forward, *follow;
@@ -185,7 +185,7 @@ UGDS_insert_hashtable(UGDS_Hashtbl *tbl, UGDS_Symbol sym, void *data) {
 }
 
 UGDS_HashEntry *
-UGDS_find_entry(UGDS_Hashtbl *tbl, UGDS_Symbol sym) {
+UGDS_find_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym) {
   size_t index = hash_symbol(sym) % tbl->_n_buckets;
 
   UGDS_HashEntry *entry;
