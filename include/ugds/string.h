@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#include "utf8proc.h"
+
 #include "ugds/vector.h"
 
 /* The String is a mutable string class designed as an alternative to
@@ -23,6 +25,7 @@ bool string_equal(const String *str1, const String *str2);
 
 /* This appends str2's value onto str1, returning false on failure */
 bool string_concat(String *str1, const String *str2);
+int32_t string_index(String *str, size_t index);
 
 void string_destroy(String *string);
 void string_print(FILE *file, const String *string);

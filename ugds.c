@@ -6,6 +6,7 @@
 #include "ugds/symbol.h"
 #include "ugds/vector.h"
 #include "ugds/string.h"
+#include "utf8proc.h"
 
 #define HASHTBL_INIT_BUCKETS 8
 
@@ -223,13 +224,13 @@ hashtbl_find(const Hashtbl *tbl, Symbol sym) {
 
 String *
 string_init() {
-  return vec_init(sizeof(unsigned char));
+  return vec_init(sizeof(uint8_t));
 }
 
 String *
 string_init_of_c_string(const char *c) {
   size_t len = strlen(c);
-  Vec *ret = vec_init_of_size(sizeof(unsigned char), len);
+  Vec *ret = vec_init_of_size(sizeof(uint8_t), len);
   if (!ret) {
     return NULL;
   }
@@ -270,4 +271,21 @@ string_concat(String *str1, const String *str2) {
 void
 string_print(FILE *file, const String *string) {
   fprintf(file, "%.*s", (int)string->len, (const unsigned char *)string->_buf);
+}
+
+int32_t
+string_index(String *str, size_t index) {
+  uint8_t *temp_text = str->_buf;
+  size_t temp_len = str->len;
+  int32_t codepoint;
+  for (size_t i = 0; i < index; i++) {
+    utf8proc_ssize_t result = utf8proc_iterate(temp_text, temp_len, &codepoint);
+    if (codepoint == -1) {
+      return -1;
+    }
+    temp_text += result;
+    temp_len -= result;
+  }
+  utf8proc_iterate(temp_text, temp_len, &codepoint);
+  return codepoint;
 }
