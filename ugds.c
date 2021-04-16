@@ -276,7 +276,7 @@ string_print(FILE *file, const String *string) {
 int32_t
 string_index(String *str, size_t index) {
   uint8_t *temp_text = str->_buf;
-  size_t temp_len = str->len;
+  utf8proc_ssize_t temp_len = str->len;
   int32_t codepoint;
   for (size_t i = 0; i < index; i++) {
     utf8proc_ssize_t result = utf8proc_iterate(temp_text, temp_len, &codepoint);
@@ -285,6 +285,9 @@ string_index(String *str, size_t index) {
     }
     temp_text += result;
     temp_len -= result;
+    if (temp_len <= 0) {
+      return -1;
+    }
   }
   utf8proc_iterate(temp_text, temp_len, &codepoint);
   return codepoint;
