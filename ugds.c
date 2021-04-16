@@ -292,3 +292,31 @@ string_index(String *str, size_t index) {
   utf8proc_iterate(temp_text, temp_len, &codepoint);
   return codepoint;
 }
+
+StringIter
+string_chars(String *str) {
+  StringIter ret;
+  ret.buf_ptr = str->_buf;
+  ret.len = str->len;
+  return ret;
+}
+
+int32_t
+string_iter_next(StringIter *iter) {
+  int32_t ret;
+  utf8proc_ssize_t bytes_used =
+      utf8proc_iterate(iter->buf_ptr, iter->len, &ret);
+  if (ret != -1) {
+    iter->buf_ptr += bytes_used;
+    iter->len -= bytes_used;
+  }
+  return ret;
+}
+
+int32_t
+string_iter_peek(StringIter *iter) {
+  int32_t ret;
+
+  utf8proc_iterate(iter->buf_ptr, iter->len, &ret);
+  return ret;
+}

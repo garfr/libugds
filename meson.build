@@ -20,4 +20,4 @@ ugds = library(
 #main = executable(
   #'main', 'main.c', 
   #c_args : ['-Wall', '-Wextra', '-Werror','-g', '-std=c99', '-pedantic'],
-  #include_directories : [inc], link_with: ugds)
+  #include_directories : [inc], link_with: ugds, dependencies: utf8proc_dep)

@@ -14,6 +14,11 @@
 
 typedef Vec String;
 
+typedef struct StringIter {
+  uint8_t *buf_ptr;
+  utf8proc_ssize_t len;
+} StringIter;
+
 /* Creates an empty string */
 String *string_init();
 
@@ -25,7 +30,16 @@ bool string_equal(const String *str1, const String *str2);
 
 /* This appends str2's value onto str1, returning false on failure */
 bool string_concat(String *str1, const String *str2);
+/* Returns the Unicode codepoint at index, or -1 if the string or index is
+ * invalid */
 int32_t string_index(String *str, size_t index);
+
+/* Returns an iterator over the codepoints in the string */
+StringIter string_chars(String *str);
+
+/* Returns -1 if there are no more codepoints to iterate */
+int32_t string_iter_next(StringIter *iter);
+int32_t string_iter_peek(StringIter *iter);
 
 void string_destroy(String *string);
 void string_print(FILE *file, const String *string);
