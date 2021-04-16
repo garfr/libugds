@@ -3,30 +3,29 @@
 
 #include "ugds/symbol.h"
 
-typedef struct UGDS_HashEntry {
-  UGDS_Symbol sym;
+typedef struct HashEntry {
+  Symbol sym;
   void *data;
-  struct UGDS_HashEntry *next;
-} UGDS_HashEntry;
+  struct HashEntry *next;
+} HashEntry;
 
-typedef void (*UGDS_Hashtbl_free)(void *data);
+typedef void (*HashtblFree)(void *data);
 
 typedef struct {
   size_t _n_entries;
   size_t _n_buckets;
-  UGDS_HashEntry **_buckets;
-  UGDS_Hashtbl_free _free_fn;
-} UGDS_Hashtbl;
+  HashEntry **_buckets;
+  HashtblFree _free_fn;
+} Hashtbl;
 
 /* If a function pointer is NULL, the hashtable will do nothing when it is
  * called */
-UGDS_Hashtbl *UGDS_init_hashtbl(UGDS_Hashtbl_free free_fn);
-void UGDS_destroy_hashtbl(UGDS_Hashtbl *tbl);
+Hashtbl *hashtbl_init(HashtblFree free_fn);
+void hastbl_destroy(Hashtbl *tbl);
 
 /* Returns NULL on memory allocation failure, replaces the value if the entry is
  * already there */
-UGDS_HashEntry *UGDS_insert_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym,
-                                    void *data);
-UGDS_HashEntry *UGDS_find_hashtbl(const UGDS_Hashtbl *tbl, UGDS_Symbol sym);
+HashEntry *hashtbl_insert(Hashtbl *tbl, Symbol sym, void *data);
+HashEntry *hashtbl_find(const Hashtbl *tbl, Symbol sym);
 
 #endif

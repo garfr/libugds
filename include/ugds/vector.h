@@ -9,21 +9,21 @@ typedef struct {
   size_t _item_size; /* How much memory the item stored takes, in bytes */
   size_t _alloc;     /* How much memory is allocated, in number of items */
   uint8_t *_buf;
-} UGDS_Vector;
+} Vec;
 
 /* Both of these return NULL on any allocation failure */
-UGDS_Vector *UGDS_init_vector(size_t item_size);
-UGDS_Vector *UGDS_init_vector_of_len(size_t item_size, size_t init_len);
+Vec *vec_init(size_t item_size);
+Vec *vec_init_of_size(size_t item_size, size_t init_len);
 
 /* Returns NULL on failure to push vector, otherwise a pointer to the newly
  * pushed item */
-void *UGDS_push_vector(UGDS_Vector *vec, void *item);
+void *vec_append(Vec *vec, void *item);
 
 /* Returns NULL on out of bounds */
-void *UGDS_index_vector(const UGDS_Vector *vec, size_t index);
+void *vec_index(const Vec *vec, size_t index);
 
 /* Will not fail */
-void UGDS_destroy_vector(UGDS_Vector *vec);
-bool UGDS_reserve_vector(UGDS_Vector *vec, size_t amount);
+void vec_destroy(Vec *vec);
+bool vec_reserve(Vec *vec, size_t amount);
 
 #endif

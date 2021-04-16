@@ -9,7 +9,7 @@
 
 #define HASHTBL_INIT_BUCKETS 8
 
-/* ---- UGDS_Vector ---- */
+/* ---- Vec ---- */
 
 /* Rounds number to nearest power of 2 */
 static inline size_t
@@ -21,9 +21,9 @@ roundup(size_t num) {
   return ret;
 }
 
-UGDS_Vector *
-UGDS_init_vector(size_t item_size) {
-  UGDS_Vector *ret = calloc(1, sizeof(UGDS_Vector));
+Vec *
+vec_init(size_t item_size) {
+  Vec *ret = calloc(1, sizeof(Vec));
   if (!ret) {
     return NULL;
   }
@@ -35,9 +35,9 @@ UGDS_init_vector(size_t item_size) {
   return ret;
 }
 
-UGDS_Vector *
-UGDS_init_vector_of_len(size_t item_size, size_t init_len) {
-  UGDS_Vector *ret = calloc(1, sizeof(UGDS_Vector));
+Vec *
+vec_init_of_size(size_t item_size, size_t init_len) {
+  Vec *ret = calloc(1, sizeof(Vec));
   if (!ret) {
     return NULL;
   }
@@ -58,7 +58,7 @@ UGDS_init_vector_of_len(size_t item_size, size_t init_len) {
 }
 
 void *
-UGDS_push_vector(UGDS_Vector *vec, void *item) {
+vec_push(Vec *vec, void *item) {
   /* Realloc needed */
   if (vec->len + 1 >= vec->_alloc) {
     size_t new_alloc = vec->len == 0 ? 1 : vec->len * 2;
@@ -78,7 +78,7 @@ UGDS_push_vector(UGDS_Vector *vec, void *item) {
 }
 
 void *
-UGDS_index_vector(const UGDS_Vector *vec, size_t index) {
+vec_index(const Vec *vec, size_t index) {
   if (index >= vec->len) {
     return NULL;
   }
@@ -86,7 +86,7 @@ UGDS_index_vector(const UGDS_Vector *vec, size_t index) {
 }
 
 bool
-UGDS_reserve_vector(UGDS_Vector *vec, size_t amount) {
+vec_reserve(Vec *vec, size_t amount) {
   if (vec->len + amount >= vec->_alloc) {
     size_t new_items = roundup(vec->len + amount);
     size_t new_size = new_items * vec->_item_size;
@@ -101,28 +101,28 @@ UGDS_reserve_vector(UGDS_Vector *vec, size_t amount) {
 }
 
 void
-UGDS_destroy_vector(UGDS_Vector *vec) {
+vec_destroy(Vec *vec) {
   if (vec->_buf) {
     free(vec->_buf);
   }
   free(vec);
 }
 
-/* ---- UGDS_Symbol ---- */
+/* ---- Symbol ---- */
 
-UGDS_Symbol
-UGDS_init_symbol_from_c_string(const char *str) {
-  UGDS_Symbol ret = {.text = (const unsigned char *)str, .len = strlen(str)};
+Symbol
+symbol_init(const char *str) {
+  Symbol ret = {.text = (const unsigned char *)str, .len = strlen(str)};
   return ret;
 }
 
 void
-UGDS_print_symbol(FILE *file, UGDS_Symbol sym) {
+symbol_print(FILE *file, Symbol sym) {
   fprintf(file, "%.*s", (int)sym.len, sym.text);
 }
 
 bool
-UGDS_equal_symbol(UGDS_Symbol sym1, UGDS_Symbol sym2) {
+symbol_equal(Symbol sym1, Symbol sym2) {
   if (sym1.len != sym2.len) {
     return false;
   }
@@ -131,16 +131,16 @@ UGDS_equal_symbol(UGDS_Symbol sym1, UGDS_Symbol sym2) {
          0;
 }
 
-/* ---- UGDS_Hashtbl ---- */
+/* ---- Hashtbl ---- */
 
-UGDS_Hashtbl *
-UGDS_init_hashtbl(UGDS_Hashtbl_free free_fn) {
-  UGDS_Hashtbl *table = calloc(1, sizeof(UGDS_Hashtbl));
+Hashtbl *
+hashtbl_init(HashtblFree free_fn) {
+  Hashtbl *table = calloc(1, sizeof(Hashtbl));
   if (!table) {
     return NULL;
   }
 
-  table->_buckets = calloc(HASHTBL_INIT_BUCKETS, sizeof(UGDS_HashEntry *));
+  table->_buckets = calloc(HASHTBL_INIT_BUCKETS, sizeof(HashEntry *));
   if (!table->_buckets) {
     free(table);
     return NULL;
@@ -153,13 +153,13 @@ UGDS_init_hashtbl(UGDS_Hashtbl_free free_fn) {
 }
 
 void
-UGDS_destroy_hashtbl(UGDS_Hashtbl *tbl) {
+hashtbl_destroy(Hashtbl *tbl) {
   for (size_t i = 0; i < tbl->_n_buckets; i++) {
-    for (UGDS_HashEntry *entry = tbl->_buckets[i]; entry != NULL;) {
+    for (HashEntry *entry = tbl->_buckets[i]; entry != NULL;) {
       if (tbl->_free_fn) {
         tbl->_free_fn(entry->data);
       }
-      UGDS_HashEntry *old = entry;
+      HashEntry *old = entry;
       entry = entry->next;
       free(old);
     }
@@ -169,7 +169,7 @@ UGDS_destroy_hashtbl(UGDS_Hashtbl *tbl) {
 }
 
 static size_t
-hash_symbol(UGDS_Symbol sym) {
+hash_symbol(Symbol sym) {
   size_t total = 0;
   for (size_t i = 0; i < sym.len; i++) {
     total += sym.text[i];
@@ -177,16 +177,16 @@ hash_symbol(UGDS_Symbol sym) {
   return total;
 }
 
-UGDS_HashEntry *
-UGDS_insert_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym, void *data) {
+HashEntry *
+hashtbl_insert(Hashtbl *tbl, Symbol sym, void *data) {
   size_t index = hash_symbol(sym) % tbl->_n_buckets;
 
-  UGDS_HashEntry *forward, *follow;
+  HashEntry *forward, *follow;
   forward = tbl->_buckets[index];
   follow = forward;
 
   while (forward != NULL) {
-    if (UGDS_equal_symbol(forward->sym, sym)) {
+    if (symbol_equal(forward->sym, sym)) {
       forward->data = data;
       return forward;
     }
@@ -194,7 +194,7 @@ UGDS_insert_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym, void *data) {
     forward = forward->next;
   }
 
-  forward = calloc(1, sizeof(UGDS_HashEntry));
+  forward = calloc(1, sizeof(HashEntry));
   forward->sym = sym;
   forward->data = data;
   forward->next = NULL;
@@ -206,30 +206,30 @@ UGDS_insert_hashtbl(UGDS_Hashtbl *tbl, UGDS_Symbol sym, void *data) {
   return forward;
 }
 
-UGDS_HashEntry *
-UGDS_find_hashtbl(const UGDS_Hashtbl *tbl, UGDS_Symbol sym) {
+HashEntry *
+hashtbl_find(const Hashtbl *tbl, Symbol sym) {
   size_t index = hash_symbol(sym) % tbl->_n_buckets;
 
-  UGDS_HashEntry *entry;
+  HashEntry *entry;
   for (entry = tbl->_buckets[index]; entry != NULL; entry = entry->next) {
-    if (UGDS_equal_symbol(entry->sym, sym)) {
+    if (symbol_equal(entry->sym, sym)) {
       return entry;
     }
   }
   return NULL;
 }
 
-/* ---- UGDS_String ---- */
+/* ---- String ---- */
 
-UGDS_String *
-UGDS_init_string() {
-  return UGDS_init_vector(sizeof(unsigned char));
+String *
+string_init() {
+  return vec_init(sizeof(unsigned char));
 }
 
-UGDS_String *
-UGDS_init_string_from_c_string(const char *c) {
+String *
+string_init_of_c_string(const char *c) {
   size_t len = strlen(c);
-  UGDS_Vector *ret = UGDS_init_vector_of_len(sizeof(unsigned char), len);
+  Vec *ret = vec_init_of_size(sizeof(unsigned char), len);
   if (!ret) {
     return NULL;
   }
@@ -239,12 +239,12 @@ UGDS_init_string_from_c_string(const char *c) {
 }
 
 void
-UGDS_destroy_string(UGDS_String *string) {
-  UGDS_destroy_vector(string);
+string_destroy(String *string) {
+  vec_destroy(string);
 }
 
 bool
-UGDS_equal_string(const UGDS_String *str1, const UGDS_String *str2) {
+string_equal(const String *str1, const String *str2) {
   if (str1->len != str2->len) {
     return false;
   }
@@ -257,8 +257,8 @@ UGDS_equal_string(const UGDS_String *str1, const UGDS_String *str2) {
 }
 
 bool
-UGDS_concat_string(UGDS_String *str1, const UGDS_String *str2) {
-  if (!UGDS_reserve_vector(str1, str2->len)) {
+string_concat(String *str1, const String *str2) {
+  if (!vec_reserve(str1, str2->len)) {
     return false;
   }
 
@@ -268,6 +268,6 @@ UGDS_concat_string(UGDS_String *str1, const UGDS_String *str2) {
 }
 
 void
-UGDS_print_string(FILE *file, const UGDS_String *string) {
+string_print(FILE *file, const String *string) {
   fprintf(file, "%.*s", (int)string->len, (const unsigned char *)string->_buf);
 }
