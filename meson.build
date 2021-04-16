@@ -2,6 +2,7 @@ project('ugds', 'c')
 
 src = [
   'ugds.c',
+  'endian.c',
 ]
 
 inc = include_directories('include')
