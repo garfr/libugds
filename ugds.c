@@ -220,6 +220,41 @@ hashtbl_find(const Hashtbl *tbl, Symbol sym) {
   return NULL;
 }
 
+HashtblIter
+hashtbl_iter_init(Hashtbl *tbl) {
+  HashtblIter iter;
+  iter.tbl = tbl;
+  iter.bucket = 0;
+  iter.entry = NULL;
+  return iter;
+}
+
+HashEntry *
+hashtbl_iter_next(HashtblIter *iter) {
+  if (iter->entry != NULL) {
+    HashEntry *ret = iter->entry;
+    iter->entry = iter->entry->next;
+    return ret;
+  }
+  if (iter->bucket < iter->tbl->_n_buckets) {
+    iter->entry = iter->tbl->_buckets[iter->bucket];
+    iter->bucket++;
+    return hashtbl_iter_next(iter);
+  }
+  return NULL;
+}
+
+HashEntry *
+hashtbl_iter_peek(HashtblIter *iter) {
+  if (iter->entry != NULL) {
+    return iter->entry;
+  }
+  if (iter->bucket < iter->tbl->_n_buckets) {
+    return iter->tbl->_buckets[iter->bucket];
+  }
+  return NULL;
+}
+
 /* ---- String ---- */
 
 String *
